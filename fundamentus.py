@@ -59,8 +59,8 @@ def get_data(*args, **kwargs):
             'tx_cresc_rec_min':'',
             'tx_cresc_rec_max':'',
             'setor':'',
-            'negociada':'ON',
-            'ordem':'1',
+            'negociada':'',
+            'ordem':'',
             'x':'28',
             'y':'16'}
 

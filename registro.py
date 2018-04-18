@@ -103,7 +103,7 @@ def cvm2symbol(cvm_codes, cvm_prices_and_liq):
 
 		# Skip when no symbol 
 		if symbol:
-			cvm_symbol.append((code, symbol, cvm_prices_and_liq.loc[symbol].price, cvm_prices_and_liq.loc[symbol].date))
+			cvm_symbol.append((code, symbol, convertNum(cvm_prices_and_liq.loc[symbol].price), pd.to_datetime(cvm_prices_and_liq.loc[symbol].date)))
 
 	return pd.DataFrame(cvm_symbol, columns=['cvm_code', 'symbol', 'price', 'date'])
 

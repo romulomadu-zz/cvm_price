@@ -8,6 +8,8 @@ from registro import cvm, cvm2symbol, result
 from datetime import datetime
 from tqdm import tqdm
 from sqlalchemy import create_engine
+from sqlalchemy.types import NVARCHAR, FLOAT, DATETIME, BIGINT
+
 
 pymysql.install_as_MySQLdb()
 
@@ -36,7 +38,8 @@ res = result()
 
 # Get cvm+symbol price table na save to MySQL db
 cs = cvm2symbol(reg.cvm_code, res.set_index('symbol'))
-cs.to_sql('precos', conn, if_exists='replace', index=False)
+types = dict(zip(cs.columns, [BIGINT, NVARCHAR(length=6), FLOAT, DATETIME]))
+cs.to_sql('precos', conn, if_exists='replace', index=False, dtype=types)
 
 @app.route("/")
 def json_api():
@@ -51,7 +54,7 @@ def json_api():
 
         # Get cvm+symbol price table na update table in MySQL db
         cs = cvm2symbol(reg.cvm_code, res.set_index('symbol'))
-        cs.to_sql('precos', conn, if_exists='replace', index=False)        
+        cs.to_sql('precos', conn, if_exists='replace', index=False, dtype=types)
         return jsonify(lista)
 
 app.run(debug=True)
