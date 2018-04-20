@@ -36,7 +36,7 @@ if __name__ == '__main__':
 
     # Connect to the database
     conn = create_engine(f'mysql+mysqldb://{user}:{password}@{host}:3306/{db}', echo = False)
-    print ('Connect successful!!')
+    print ('Connection success.')
 
     # Get register table
     reg = cvm()
