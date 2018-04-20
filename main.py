@@ -15,10 +15,19 @@ pymysql.install_as_MySQLdb()
 lista = []
 dia = None
 
+print(
+'''
+#############################################################################
+#        Programa para atualizar os preços dos ativos para planilha         #
+#############################################################################
+'''
+    )
+
+
 param = pd.read_csv('db_param.csv', header=0)
 # Database parameters
 host=param.host.values[0]
-user=param.root.values[0]
+user=param.user.values[0]
 password=param.password.values[0]
 db=param.db.values[0]
 
