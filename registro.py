@@ -8,8 +8,15 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 from fundamentus import get_data
 from tqdm import tqdm
+from exception_util import exception, create_logger, retry
 
 
+cvm_logger = create_logger('cvm_logger')
+result_logger = create_logger('result_logger')
+cvm2symbol_logger = create_logger('cvm2symbol_logger')
+
+@retry()
+@exception(cvm_logger)
 def cvm():
 	"""
 	Get registration of all companies listed in CVM.
@@ -36,7 +43,7 @@ def cvm():
 
 	# Loop through index pages and append registration information to data list
 	data = list()
-	for letra_inicial in tqdm(alphanum, desc='Reading companies...', unit='tabs'):
+	for letra_inicial in tqdm(alphanum, desc='Reading companies', unit='tabs'):
 		# get html
 		with urlopen(url+f'{letra_inicial}') as html:
 			soup = BeautifulSoup(html, 'html.parser')
@@ -59,6 +66,8 @@ def cvm():
 
 	return df
 
+@retry()
+@exception(cvm2symbol_logger)
 def cvm2symbol(cvm_codes, cvm_prices_and_liq):
 	"""
 	Get most relevant symbol price with cvm_code information
@@ -84,7 +93,7 @@ def cvm2symbol(cvm_codes, cvm_prices_and_liq):
 
 	# Get symbols at url entering adding cmv_code to query
 	cvm_symbol = []
-	for code in tqdm(cvm_codes, desc='Reading prices...', unit='codes'):
+	for code in tqdm(cvm_codes, desc='Reading prices', unit='codes'):
 		with urlopen(url+f'{code}') as html:
 			soup = BeautifulSoup(html, 'html.parser')
 		liq = .0
@@ -107,7 +116,9 @@ def cvm2symbol(cvm_codes, cvm_prices_and_liq):
 
 	return pd.DataFrame(cvm_symbol, columns=['cvm_code', 'symbol', 'price', 'date'])
 
-def result():
+@retry()
+@exception(result_logger)
+def get_result():
 	"""
 	Get a table with cotacao and liq info from fundamentus page.
 
@@ -131,7 +142,7 @@ def result():
 	date = datetime.strftime(datetime.today(), '%d-%m-%y')
 
 	# Select just cotaco and liq values fields.
-	for key, value in tqdm(lista.items(), desc='Retrieving info...', unit='registers'):
+	for key, value in tqdm(lista.items(), desc='Retrieving info', unit='registers'):
 		resultado.append((key, value['cotacao'], value['Liq.2m.'], date))
 
 	return pd.DataFrame(resultado, columns=['symbol', 'price', 'liq', 'date'])
@@ -146,10 +157,10 @@ if __name__ == '__main__':
 	# test cvm2symbol
 	lst = ['906', '9512']
 	data = [
-		['BBDC4', '2.00', '5', '10/04'],
-		['BBDC3', '3.00', '6', '10/04'],
-		['PETR3', '5.00', '5', '10/04'],
-		['PETR4', '6.00', '6', '10/04'],
+		['BBDC4', '2.00', '5', pd.to_datetime('10-04-2018')],
+		['BBDC3', '3.00', '6', pd.to_datetime('10-04-2018')],
+		['PETR3', '5.00', '5', pd.to_datetime('10-04-2018')],
+		['PETR4', '6.00', '6', pd.to_datetime('10-04-2018')],
 	]
 
 	df = pd.DataFrame(data, columns=['symbol', 'price', 'liq', 'date'])

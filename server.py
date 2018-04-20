@@ -4,12 +4,12 @@ import sqlite3
 import pymysql
 
 from flask import Flask, jsonify
-from registro import cvm, cvm2symbol, result
+from registro import cvm, cvm2symbol, get_result
 from datetime import datetime
 from tqdm import tqdm
 from sqlalchemy import create_engine
 from sqlalchemy.types import NVARCHAR, FLOAT, DATETIME, BIGINT
-
+from exception_util import MySendMail
 
 pymysql.install_as_MySQLdb()
 
@@ -34,12 +34,15 @@ app = Flask(__name__)
 reg = cvm()
 
 # Get result table
-res = result()
+res = get_result()
 
-# Get cvm+symbol price table na save to MySQL db
-cs = cvm2symbol(reg.cvm_code, res.set_index('symbol'))
-types = dict(zip(cs.columns, [BIGINT, NVARCHAR(length=6), FLOAT, DATETIME]))
-cs.to_sql('precos', conn, if_exists='replace', index=False, dtype=types)
+try:
+    # Get cvm+symbol price table na save to MySQL db
+    cs = cvm2symbol(reg.cvm_code, res.set_index('symbol'))
+    types = dict(zip(cs.columns, [BIGINT, NVARCHAR(length=6), FLOAT, DATETIME]))
+    cs.to_sql('precos', conn, if_exists='replace', index=False, dtype=types)
+except Exception as e:
+    MySendMail(e)
 
 @app.route("/")
 def json_api():
@@ -50,11 +53,13 @@ def json_api():
         return jsonify(lista)
     else:
         # Get register table
-        res = result()
+        res = get_result()
 
-        # Get cvm+symbol price table na update table in MySQL db
-        cs = cvm2symbol(reg.cvm_code, res.set_index('symbol'))
-        cs.to_sql('precos', conn, if_exists='replace', index=False, dtype=types)
-        return jsonify(lista)
+        try:
+            # Get cvm+symbol price table na save to MySQL db
+            cs = cvm2symbol(reg.cvm_code, res.set_index('symbol'))
+            cs.to_sql('precos', conn, if_exists='replace', index=False, dtype=types)
+        except Exception as e:
+            MySendMail(e)
 
 app.run(debug=True)
