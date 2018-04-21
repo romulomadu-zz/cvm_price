@@ -9,9 +9,9 @@ from time import sleep
 
 
 def retry(times=3, waiting_time=30):
-    """
+    '''
     Decorator to retry any functions 'times' times.
-    """
+    '''
     def retry_decorator(func):
         @wraps(func)
         def retried_function(*args, **kwargs):
@@ -98,5 +98,18 @@ def MySendMail(message):
     server.quit()
 
 if __name__ == '__main__':
-    # test MySendMail
-    MySendMail('Hello!')
+    # Create logger
+    logger =  create_logger()
+    
+    # Add retry and exception decorators
+    @retry()
+    @exception(logger)
+    def division_zero():
+        return 1/0
+    
+    # Test 
+    try:
+        division_zero()
+    except Exception as e:
+        print(e)
+        MySendMail(e)

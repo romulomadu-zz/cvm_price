@@ -8,6 +8,7 @@ from tqdm import tqdm
 from sqlalchemy import create_engine
 from sqlalchemy.types import NVARCHAR, FLOAT, DATETIME, BIGINT
 from exception_util import MySendMail
+from time import sleep
 
 pymysql.install_as_MySQLdb()
 
@@ -18,7 +19,7 @@ dia = None
 print(
 '''
 #############################################################################
-#        Programa para atualizar os preços dos ativos para planilha         #
+#        Programa para atualizar os preços dos ativos da planilha           #
 #############################################################################
 '''
     )
@@ -50,6 +51,8 @@ if __name__ == '__main__':
         types = dict(zip(cs.columns, [BIGINT, NVARCHAR(length=6), FLOAT, DATETIME]))
         cs.to_sql('precos', conn, if_exists='replace', index=False, dtype=types)
     except Exception as e:
+        #print(e)
         MySendMail(e)
+        #sleep(100)
 
 
