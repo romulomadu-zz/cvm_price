@@ -10,7 +10,7 @@ from fundamentus import get_data
 from tqdm import tqdm
 from exception_util import exception, create_logger, retry
 
-
+# Create instances of loggers
 cvm_logger = create_logger('cvm_logger')
 result_logger = create_logger('result_logger')
 cvm2symbol_logger = create_logger('cvm2symbol_logger')
@@ -139,7 +139,7 @@ def get_result():
 	lista, dia = dict(get_data()), datetime.strftime(datetime.today(), '%d')
 	
 	# Save day of update
-	date = datetime.strftime(datetime.today(), '%d-%m-%y')
+	date = datetime.strftime(datetime.today(), '%d-%m-%y %H:%M:%S')
 
 	# Select just cotaco and liq values fields.
 	for key, value in tqdm(lista.items(), desc='Retrieving info', unit='registers'):
