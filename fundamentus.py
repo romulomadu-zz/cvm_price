@@ -72,7 +72,7 @@ def get_data(*args, **kwargs):
     page = fragment_fromstring(reg)
     lista = OrderedDict()
 
-    for rows in tqdm(page.xpath('tbody')[0].findall("tr")):
+    for rows in page.xpath('tbody')[0].findall("tr"):
         lista.update({rows.getchildren()[0][0].getchildren()[0].text: {'cotacao': rows.getchildren()[1].text,
                                                                        'P/L': rows.getchildren()[2].text,
                                                                        'P/VP': rows.getchildren()[3].text,
@@ -95,44 +95,3 @@ def get_data(*args, **kwargs):
     
     return lista
     
-if __name__ == '__main__':
-    from waitingbar import WaitingBar
-    
-    THE_BAR = WaitingBar('[*] Downloading...')
-    lista,content = get_data()
-    THE_BAR.stop()
-    
-    print('{0:<7} {1:<7} {2:<10} {3:<7} {4:<10} {5:<7} {6:<10} {7:<10} {8:<10} {9:<11} {10:<11} {11:<7} {12:<11} {13:<14} {14:<7}'.format('Papel',
-                                                                                                                                          'Cotação',
-                                                                                                                                          'P/L',
-                                                                                                                                          'P/VP',
-                                                                                                                                          'PSR',
-                                                                                                                                          'DY',
-                                                                                                                                          'P/EBIT',
-                                                                                                                                          'EV/EBIT',
-                                                                                                                                          'EBITDA',
-                                                                                                                                          'Mrg.Liq.',
-                                                                                                                                          'Liq.Corr.',
-                                                                                                                                          'ROIC',
-                                                                                                                                          'ROE',
-                                                                                                                                          'Div.Brut/Pat.',
-                                                                                                                                          'Cresc.5a'))
-    
-    print('-'*154)
-    for k, v in lista.items():
-        print('{0:<7} {1:<7} {2:<10} {3:<7} {4:<10} {5:<7} {6:<10} {7:<10} {8:<10} {9:<11} {10:<11} {11:<7} {12:<11} {13:<14} {14:<7}'.format(k,
-                                                                                                                                              v['cotacao'],
-                                                                                                                                              v['P/L'],
-                                                                                                                                              v['P/VP'],
-                                                                                                                                              v['PSR'],
-                                                                                                                                              v['DY'],
-                                                                                                                                              v['P/EBIT'],
-                                                                                                                                              v['EV/EBIT'],
-                                                                                                                                              v['EBITDA'],
-                                                                                                                                              v['Mrg.Liq.'],
-                                                                                                                                              v['Liq.Corr.'],
-                                                                                                                                              v['ROIC'],
-                                                                                                                                              v['ROE'],
-                                                                                                                                              v['Div.Brut/Pat.'],
-                                                                                                                                              v['Cresc.5a']))
-

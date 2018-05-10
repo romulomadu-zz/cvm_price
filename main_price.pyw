@@ -2,7 +2,7 @@
 import pandas as pd
 import pymysql
 
-from registro import cvm, cvm2symbol, get_result
+from registro import cvm, cvm2symbol, get_result, get_price
 from datetime import datetime
 from tqdm import tqdm
 from sqlalchemy import create_engine
@@ -47,7 +47,7 @@ def main():
     res = get_result()
 
     # Get cvm+symbol price table and save to MySQL db
-    cs = cvm2symbol(reg.cvm_code, res.set_index('symbol'))
+    cs = get_price(conn, res.set_index('symbol'))
     types = dict(zip(cs.columns, [BIGINT, NVARCHAR(length=6), FLOAT, DATETIME]))
     cs.to_sql('precos', conn, if_exists='replace', index=False, dtype=types)
 

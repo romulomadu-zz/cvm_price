@@ -14,6 +14,8 @@ from exception_util import exception, create_logger, retry
 cvm_logger = create_logger('cvm_logger')
 result_logger = create_logger('result_logger')
 cvm2symbol_logger = create_logger('cvm2symbol_logger')
+price_logger = create_logger('price_logger')
+
 
 @retry()
 @exception(cvm_logger)
@@ -43,7 +45,8 @@ def cvm():
 
 	# Loop through index pages and append registration information to data list
 	data = list()
-	for letra_inicial in tqdm(alphanum, desc='Reading companies', unit='tabs'):
+	#for letra_inicial in tqdm(alphanum, desc='Reading companies', unit='tabs'):
+	for letra_inicial in alphanum:
 		# get html
 		with urlopen(url+f'{letra_inicial}') as html:
 			soup = BeautifulSoup(html, 'html.parser')
@@ -94,6 +97,7 @@ def cvm2symbol(cvm_codes, cvm_prices_and_liq):
 	# Get symbols at url entering adding cmv_code to query
 	cvm_symbol = []
 	for code in tqdm(cvm_codes, desc='Reading prices', unit='codes'):
+	#for code in cvm_codes:
 		with urlopen(url+f'{code}') as html:
 			soup = BeautifulSoup(html, 'html.parser')
 		liq = .0
@@ -112,9 +116,10 @@ def cvm2symbol(cvm_codes, cvm_prices_and_liq):
 
 		# Skip when no symbol 
 		if symbol:
-			cvm_symbol.append((code, symbol, convertNum(cvm_prices_and_liq.loc[symbol].price), pd.to_datetime(cvm_prices_and_liq.loc[symbol].date)))
+			cvm_symbol.append((code, symbol, pd.to_datetime(cvm_prices_and_liq.loc[symbol].date)))
 
-	return pd.DataFrame(cvm_symbol, columns=['cvm_code', 'symbol', 'price', 'date'])
+	
+	return pd.DataFrame(cvm_symbol, columns=['cvm_code', 'symbol', 'date'])
 
 @retry()
 @exception(result_logger)
@@ -142,10 +147,53 @@ def get_result():
 	date = datetime.strftime(datetime.today(), '%d-%m-%y %H:%M:%S')
 
 	# Select just cotaco and liq values fields.
-	for key, value in tqdm(lista.items(), desc='Retrieving info', unit='registers'):
+	#for key, value in tqdm(lista.items(), desc='Retrieving info', unit='registers'):
+	for key, value in lista.items():
 		resultado.append((key, value['cotacao'], value['Liq.2m.'], date))
 
 	return pd.DataFrame(resultado, columns=['symbol', 'price', 'liq', 'date'])
+
+@retry()
+@exception(price_logger)
+def get_price(conn, cvm_prices_and_liq):
+	"""
+	Get price from CVM companies by symbol.
+
+	This function gets prices from a table with symbols an prices then merge it with cvm code information.
+
+	Parameters
+	----------
+	db : str
+		SQLAlchemy connection to db
+	cvm_prices_and_liq : DataFrame or numpy.ndarray
+		Table indexed by symbol name and with price and liq info		
+	
+	Returns
+	-------
+	DataFrame
+	    The dataframe with fields ['cvm_code', 'symbol', 'price', 'date']
+	"""
+
+    # Get registers table
+	print('Reading companies symbols.')
+	columns = ['cvm_code', 'symbol', 'date']
+	result = conn.execute(f'SELECT * FROM cvm_dfps.cvm2symbol;').fetchall()
+	reg = pd.DataFrame(result, columns=columns)
+
+	cvm_price = []
+	#for i in tqdm(range(reg.shape[0]), desc='Reading prices', unit='codes'):
+	for i in range(reg.shape[0]):
+		symbol = reg['symbol'][i]
+		# Evaluate if symbol exists
+		if symbol not in cvm_prices_and_liq.index:
+			print(f'{symbol} deu pau')
+			continue
+		# Append to n-list
+		cvm_price.append((reg['cvm_code'][i], symbol, convertNum(cvm_prices_and_liq.loc[symbol].price), pd.to_datetime(cvm_prices_and_liq.loc[symbol].date)))
+
+	return pd.DataFrame(cvm_price, columns=['cvm_code', 'symbol', 'price', 'date'])
+
+
 
 def convertNum(number_string):
 	return float(re.sub(',', '.', re.sub('\.', '', number_string)))
@@ -165,7 +213,9 @@ if __name__ == '__main__':
 
 	df = pd.DataFrame(data, columns=['symbol', 'price', 'liq', 'date'])
 
-	print(cvm2symbol(lst, df.set_index('symbol')))
+	#print(cvm2symbol(lst, df.set_index('symbol')))
+	res = get_result()
+	print(get_price('', res.set_index('symbol')))
 
 	# test convertNum
 	print(convertNum('14.023,30'))

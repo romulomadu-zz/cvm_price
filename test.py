@@ -42,7 +42,7 @@ if __name__ == '__main__':
 		print ('Connection success.')
 
 		# Get register table
-		result = conn.execute(f'SELECT * FROM cvm_dfps.cvmregistro;').fetchall()       
+		result = conn.execute(f'SELECT * FROM cvm_dfps.cvm2symbol;').fetchall()       
 		print(pd.DataFrame(result))
     
 	except Exception as e:

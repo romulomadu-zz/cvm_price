@@ -24,8 +24,6 @@ def sendMail():
 
     return mail_decorator
 
-
-
 def retry(times=3, waiting_time=30):
     '''
     Decorator to retry any functions 'times' times.
@@ -121,10 +119,6 @@ def MySendMail(message):
     message : str
         Message to deliver
     
-    Returns
-    ----------
-    None
-
     '''
 
     # Load email parameters from mail_param.csv
